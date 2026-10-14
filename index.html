@@ -131,8 +131,8 @@ function updateSubjects(){
  fill("subjectFilter",uniq([...preset,...indexed]),"All subjects");
 }
 function filters(){
- const availableClasses=uniq([...CLASS_OPTIONS,...resources.map(r=>r.className)]);
- fill("classFilter",availableClasses,"All classes");
+ // Keep the class selector limited to supported school classes. Do not expose stray numeric values returned by malformed or mismatched source rows.
+ fill("classFilter",CLASS_OPTIONS,"All classes");
  updateSubjects();
 }
 function drawCats(){let h=$("categories");h.innerHTML="";cats.forEach(c=>{let b=document.createElement("button");b.className="cat"+(activeCat===c.id?" active":"");b.innerHTML='<span class="ico">'+c.icon+'</span><strong></strong><small>Click to filter</small>';b.querySelector("strong").textContent=c.label;b.onclick=()=>{activeCat=activeCat===c.id?"":c.id;$("resourceTypeFilter").value=activeCat;drawCats();render()};h.appendChild(b)})}
