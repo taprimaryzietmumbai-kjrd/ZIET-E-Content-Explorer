@@ -83,9 +83,27 @@ function category(r){
  if(/interactive|digital|app|online tool|e learning/.test(raw)) return "digital";
  return (cats.find(c=>c.keys.some(k=>raw.includes(k)))||cats[7]).id
 }
+function normalizeSubject(value){
+ const raw=String(value||"").trim();
+ const key=raw.toUpperCase().replace(/\\s+/g," ");
+ const aliases={
+  "MATH":"Mathematics",
+  "MATHEMATICS":"Mathematics",
+  "SCIENCE":"Science",
+  "SST":"Social Science",
+  "SOCIAL STUDIES":"Social Science",
+  "SOCIAL SCIENCE":"Social Science",
+  "ENGLISH":"English",
+  "HINDI":"Hindi",
+  "SANSKRIT":"Sanskrit",
+  "TWAU":"TWAU",
+  "THE WORLD AROUND US":"TWAU"
+ };
+ return aliases[key]||raw;
+}
 function normalize(r){return {
  className:String(r.className||r.class_name||r.class||r.grade||r.standard||r["Class"]||"").trim(),
- subject:String(r.subject||r.subjectName||r.subject_name||r.discipline||r["Subject"]||"").trim(),
+ subject:normalizeSubject(r.subject||r.subjectName||r.subject_name||r.discipline||r["Subject"]||""),
  title:String(r.title||r.resourceTitle||r.resource_title||r.name||r.resourceName||r.resource_name||r.topic||r["Title"]||"Untitled resource").trim(),
  type:String(r.type||r.category||r.resourceType||r.resource_type||r["Resource Type"]||r.sourceColumn||r.source_column||r["Source Column"]||"Other").trim(),
  sourceColumn:String(r.sourceColumn||r.source_column||r["Source Column"]||"").trim(),
@@ -118,7 +136,7 @@ function filters(){
 }
 function drawCats(){let h=$("categories");h.innerHTML="";cats.forEach(c=>{let b=document.createElement("button");b.className="cat"+(activeCat===c.id?" active":"");b.innerHTML='<span class="ico">'+c.icon+'</span><strong></strong><small>Click to filter</small>';b.querySelector("strong").textContent=c.label;b.onclick=()=>{activeCat=activeCat===c.id?"":c.id;$("resourceTypeFilter").value=activeCat;drawCats();render()};h.appendChild(b)})}
 function filtered(){let cl=$("classFilter").value,su=$("subjectFilter").value,selectedType=$("resourceTypeFilter").value,sort=$("sortFilter").value;return resources.filter(r=>(!cl||r.className===cl)&&(!su||r.subject===su)&&(!selectedType||category(r)===selectedType)&&(!activeCat||category(r)===activeCat)).sort((a,b)=>String(a[sort]||"").localeCompare(String(b[sort]||""),undefined,{numeric:true,sensitivity:"base"}))}
-function render(){let host=$("results"),data=filtered();$("count").textContent=data.length+" resource"+(data.length===1?"":"s");host.className="";host.innerHTML="";if(!data.length){host.className="empty";host.textContent="No matching indexed resources. Try another filter or open the Drive folder / resource Sheet above.";return}let grid=document.createElement("div");grid.className="results";data.forEach(r=>{let card=document.createElement("article");card.className="resource";let h=document.createElement("h3");h.textContent=r.title;card.appendChild(h);let meta=document.createElement("div");meta.className="meta";[r.className&&"Class "+r.className,r.subject,r.type].filter(Boolean).forEach(t=>{let p=document.createElement("span");p.className="pill";p.textContent=t;meta.appendChild(p)});card.appendChild(meta);if(r.description){let d=document.createElement("div");d.className="desc";d.textContent=r.description;card.appendChild(d)}let a=document.createElement("a");a.className="btn open";a.target="_blank";a.rel="noopener";a.href=r.url||DRIVE_URL;a.textContent=r.url?"Open resource ↗":"Open E-Content Drive Folder ↗";card.appendChild(a);grid.appendChild(card)});host.appendChild(grid)}
+function render(){let host=$("results"),data=filtered();$("count").textContent=data.length+" resource"+(data.length===1?"":"s");host.className="";host.innerHTML="";if(!data.length){host.className="empty";const cl=$("classFilter").value,su=$("subjectFilter").value;host.textContent=cl?"No resources are currently indexed for Class "+cl+(su?" and subject "+su:"")+". Check the connected resource Sheet; adding a class or subject to the dropdown does not add its resources.": "No matching indexed resources. Try another filter or open the Drive folder / resource Sheet above.";return}let grid=document.createElement("div");grid.className="results";data.forEach(r=>{let card=document.createElement("article");card.className="resource";let h=document.createElement("h3");h.textContent=r.title;card.appendChild(h);let meta=document.createElement("div");meta.className="meta";[r.className&&"Class "+r.className,r.subject,r.type].filter(Boolean).forEach(t=>{let p=document.createElement("span");p.className="pill";p.textContent=t;meta.appendChild(p)});card.appendChild(meta);if(r.description){let d=document.createElement("div");d.className="desc";d.textContent=r.description;card.appendChild(d)}let a=document.createElement("a");a.className="btn open";a.target="_blank";a.rel="noopener";a.href=r.url||DRIVE_URL;a.textContent=r.url?"Open resource ↗":"Open E-Content Drive Folder ↗";card.appendChild(a);grid.appendChild(card)});host.appendChild(grid)}
 function fallback(){resources=[];filters();render();notice("The interface is uploaded, but the dynamic index needs the Apps Script Web App /exec URL. The Drive folder and Sheet buttons above are already active.",true);$("count").textContent="Resource index not connected"}
 function load(){if(DATA_ENDPOINT.includes("PASTE_YOUR")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url);filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
 $("classFilter").addEventListener("change",()=>{updateSubjects();render()});$("subjectFilter").addEventListener("change",render);$("resourceTypeFilter").addEventListener("change",render);$("sortFilter").addEventListener("change",render);drawCats();load();
