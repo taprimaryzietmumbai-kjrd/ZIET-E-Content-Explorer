@@ -95,8 +95,8 @@ function normalize(r){return {
 function fill(id,values,label){let s=$(id),old=s.value;s.innerHTML="";let o=document.createElement("option");o.value="";o.textContent=label;s.appendChild(o);values.forEach(v=>{let n=document.createElement("option");n.value=v;n.textContent=v;s.appendChild(n)});if(values.includes(old))s.value=old}
 const CLASS_OPTIONS=["IV","V","VI","VII","VIII","IX","X","XI","XII"];
 const SUBJECTS_BY_CLASS={
- "IV":["English","Hindi","Mathematics","TWAU (The World Around Us)"],
- "V":["English","Hindi","Mathematics","TWAU (The World Around Us)"],
+ "IV":["English","Hindi","Mathematics","TWAU"],
+ "V":["English","Hindi","Mathematics","TWAU"],
  "VI":["Mathematics"],
  "VII":["Hindi","Sanskrit"],
  "VIII":["Hindi","Sanskrit"],
@@ -108,7 +108,7 @@ const SUBJECTS_BY_CLASS={
 function updateSubjects(){
  const c=$("classFilter").value;
  const indexed=resources.filter(r=>!c||r.className===c).map(r=>r.subject);
- const preset=c?(SUBJECTS_BY_CLASS[c]||[]):[...Object.values(SUBJECTS_BY_CLASS).flat(),"TWAU (The World Around Us)"];
+ const preset=c?(SUBJECTS_BY_CLASS[c]||[]):[...Object.values(SUBJECTS_BY_CLASS).flat(),"TWAU"];
  fill("subjectFilter",uniq([...preset,...indexed]),"All subjects");
 }
 function filters(){
