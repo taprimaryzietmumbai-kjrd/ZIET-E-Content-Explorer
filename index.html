@@ -67,8 +67,31 @@ let resources=[],activeCat="";
 const $=id=>document.getElementById(id), norm=x=>String(x||"").trim().toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ");
 function notice(msg,err=false){$("notice").textContent=msg;$("notice").className="notice show"+(err?" error":"")}
 function uniq(a){return [...new Set(a.map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}))}
-function category(r){let raw=norm([r.type,r.category,r.resourceType].join(" "));return (cats.find(c=>c.keys.some(k=>raw.includes(k)))||cats[7]).id}
-function normalize(r){return {className:String(r.className||r.class||r.grade||r.standard||r["Class"]||"").trim(),subject:String(r.subject||r.subjectName||r.discipline||r["Subject"]||"").trim(),title:String(r.title||r.resourceTitle||r.name||r.resourceName||r.topic||r["Title"]||"Untitled resource").trim(),type:String(r.type||r.category||r.resourceType||r["Resource Type"]||r.sourceColumn||r["Source Column"]||"Other").trim(),sourceColumn:String(r.sourceColumn||r["Source Column"]||"").trim(),description:String(r.description||r.details||r.keywords||r.remark||r["Description"]||"").trim(),url:String(r.url||r.link||r.resourceUrl||r.resourceLink||r.driveLink||r.hyperlink||r["URL"]||"").trim()}}
+function category(r){
+ const raw=norm([
+  r.type,r.category,r.resourceType,r.resource_type,r["Resource Type"],
+  r.sourceColumn,r.source_column,r["Source Column"]
+ ].join(" "));
+ // The source index uses legacy labels as well as descriptive resource types.
+ if(/activities?\s*\/\s*others|activities\s+others/.test(raw)) return "activity";
+ if(/activities|activity|experiential|hands on|project/.test(raw)) return "activity";
+ if(/question bank|assessment|question paper|quiz|test|item bank/.test(raw)) return "assessment";
+ if(/lesson plan|teaching learning|simulation|tlm/.test(raw)) return "lesson";
+ if(/worksheet|practice material|practice sheet|workbook/.test(raw)) return "worksheet";
+ if(/ppt|powerpoint|presentation|slides/.test(raw)) return "ppt";
+ if(/video|audio visual|multimedia/.test(raw)) return "video";
+ if(/interactive|digital|app|online tool|e learning/.test(raw)) return "digital";
+ return (cats.find(c=>c.keys.some(k=>raw.includes(k)))||cats[7]).id
+}
+function normalize(r){return {
+ className:String(r.className||r.class_name||r.class||r.grade||r.standard||r["Class"]||"").trim(),
+ subject:String(r.subject||r.subjectName||r.subject_name||r.discipline||r["Subject"]||"").trim(),
+ title:String(r.title||r.resourceTitle||r.resource_title||r.name||r.resourceName||r.resource_name||r.topic||r["Title"]||"Untitled resource").trim(),
+ type:String(r.type||r.category||r.resourceType||r.resource_type||r["Resource Type"]||r.sourceColumn||r.source_column||r["Source Column"]||"Other").trim(),
+ sourceColumn:String(r.sourceColumn||r.source_column||r["Source Column"]||"").trim(),
+ description:String(r.description||r.details||r.keywords||r.remark||r["Description"]||"").trim(),
+ url:String(r.url||r.link||r.resourceUrl||r.resource_url||r.resourceLink||r.resource_link||r.driveLink||r.drive_link||r.hyperlink||r["URL"]||"").trim()
+}}
 function fill(id,values,label){let s=$(id),old=s.value;s.innerHTML="";let o=document.createElement("option");o.value="";o.textContent=label;s.appendChild(o);values.forEach(v=>{let n=document.createElement("option");n.value=v;n.textContent=v;s.appendChild(n)});if(values.includes(old))s.value=old}
 const CLASS_OPTIONS=["IV","VI","VII","VIII","IX","X","XI","XII"];
 const SUBJECTS_BY_CLASS={
