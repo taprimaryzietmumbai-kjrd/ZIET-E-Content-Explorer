@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZIET Mumbai | E-Content Explorer</title>
+<style>
+:root{--navy:#12316b;--blue:#1b4f91;--maroon:#9d1734;--gold:#eab84c;--ink:#26334a;--muted:#64718a;--line:#e1e7f0;--paper:#f4f7fc}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Arial,sans-serif;color:var(--ink);line-height:1.45}
+header{background:linear-gradient(120deg,#10275c,#1b5797);color:white;text-align:center;padding:26px 16px 22px;border-bottom:5px solid var(--gold)}
+.brand{font-weight:800;letter-spacing:.03em}.hindi{font-weight:700;margin-top:5px}.english{font-size:.85rem;opacity:.94}h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:13px 0 4px;color:#fff1bf}.sub{margin:0 auto;max-width:780px}
+main{max-width:1200px;margin:22px auto;padding:0 14px 40px}.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+a.btn,button{display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border:0;border-radius:11px;text-decoration:none;font-weight:750;cursor:pointer;font-size:.94rem}.primary{background:var(--maroon);color:white}.light{background:white;color:var(--navy);border:1px solid var(--line)}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;margin:15px 0;box-shadow:0 6px 22px #142d5610}.panel h2{font-size:1.1rem;margin:0 0 12px;color:var(--navy)}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}label{display:block;font-weight:750;font-size:.9rem;color:var(--navy);margin-bottom:6px}select,input{width:100%;padding:12px;border:1px solid #ccd5e3;border-radius:10px;background:white;color:var(--ink);font:inherit}
+.categories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.cat{display:block;text-align:left;background:#f8faff;border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--navy);min-height:78px}.cat.active{background:#eaf1ff;border:2px solid var(--blue);padding:11px}.ico{font-size:1.3rem;display:block;margin-bottom:5px}.cat small{display:block;color:var(--muted);margin-top:4px;font-weight:400}
+.resulthead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.count{color:var(--muted);font-size:.9rem}.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:13px}.resource{border:1px solid var(--line);border-radius:13px;padding:15px;display:flex;flex-direction:column;gap:8px}.resource h3{margin:0;color:var(--navy);font-size:1rem;overflow-wrap:anywhere}.meta{display:flex;gap:6px;flex-wrap:wrap}.pill{background:#edf2fb;color:#284b7c;padding:4px 8px;border-radius:20px;font-size:.76rem;font-weight:700}.desc{font-size:.9rem;color:#53617a}.open{margin-top:auto;background:var(--blue);color:white;width:100%}.empty{padding:24px;text-align:center;color:var(--muted);background:#f8faff;border:1px dashed #cbd5e4;border-radius:12px}.notice{display:none;padding:12px;border-radius:10px;background:#fff7df;color:#775600;font-size:.9rem;margin-top:12px}.notice.show{display:block}.notice.error{background:#fff0f0;color:#8b1c2a}.foot{text-align:center;color:var(--muted);font-size:.84rem;padding:16px}
+@media(max-width:850px){.filters,.categories{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.filters,.results{grid-template-columns:1fr}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">केन्द्रीय विद्यालय संगठन | KENDRIYA VIDYALAYA SANGATHAN</div>
+ <div class="hindi">आंचलिक शिक्षा एवं प्रशिक्षण संस्थान, मुंबई</div>
+ <div class="english">ZONAL INSTITUTE OF EDUCATION AND TRAINING, MUMBAI</div>
+ <h1>E-Content Explorer</h1><p class="sub">Find teaching-learning resources in one click — Classwise, Subjectwise and Resourcewise</p>
+</header>
+<main>
+ <div class="actions">
+  <a class="btn primary" href="https://drive.google.com/drive/folders/1ZsgALM_uAYuX4GQxoMHyHnbHDP78EQX2?usp=sharing" target="_blank" rel="noopener">📁 Open E-Content Drive Folder</a>
+  <a class="btn light" href="https://docs.google.com/spreadsheets/d/1AC71sfjr9uOfowsy0Kf_D0J4RQAKwyF8-BkiiJApu7I/edit?usp=sharing" target="_blank" rel="noopener">📊 Open Resource Index Sheet</a>
+ </div>
+ <section class="panel"><h2>1. Choose Class and Subject</h2><div class="filters">
+  <div><label for="classFilter">Class</label><select id="classFilter"><option value="">All classes</option></select></div>
+  <div><label for="subjectFilter">Subject</label><select id="subjectFilter"><option value="">All subjects</option></select></div>
+  <div><label for="searchBox">Search resources</label><input id="searchBox" type="search" placeholder="Title, topic or keyword"></div>
+  <div><label for="sortFilter">Sort by</label><select id="sortFilter"><option value="title">Title (A–Z)</option><option value="className">Class</option><option value="subject">Subject</option><option value="type">Resource type</option></select></div>
+ </div></section>
+ <section class="panel"><h2>2. Choose Resource Type</h2><div class="categories" id="categories"></div></section>
+ <section class="panel"><div class="resulthead"><h2 style="margin:0">3. Matching E-Content</h2><span class="count" id="count">Preparing resource index…</span></div><div id="notice" class="notice"></div><div id="results" class="empty">Resource index connection is being checked…</div></section>
+ <div class="foot">ZIET Mumbai • E-Content Repository • Use resources in accordance with their sharing permissions.</div>
+</main>
+<script>
+const DRIVE_URL="https://drive.google.com/drive/folders/1ZsgALM_uAYuX4GQxoMHyHnbHDP78EQX2?usp=sharing";
+const SHEET_URL="https://docs.google.com/spreadsheets/d/1AC71sfjr9uOfowsy0Kf_D0J4RQAKwyF8-BkiiJApu7I/edit?usp=sharing";
+// After deploying Code.gs as a Google Apps Script Web App, paste its /exec URL below.
+const DATA_ENDPOINT="PASTE_YOUR_APPS_SCRIPT_WEB_APP_EXEC_URL_HERE";
+const cats=[
+{id:"video",label:"Videos / Audio-Visual Resources",icon:"🎬",keys:["video","audio visual","audio-visual","multimedia"]},
+{id:"ppt",label:"PPTs / Presentations",icon:"📊",keys:["ppt","powerpoint","presentation","slides"]},
+{id:"worksheet",label:"Worksheets / Practice Material",icon:"📝",keys:["worksheet","practice material","practice sheet","workbook"]},
+{id:"lesson",label:"Lesson Plans / Teaching-Learning Material",icon:"📚",keys:["lesson plan","teaching-learning","teaching learning material","tlm"]},
+{id:"activity",label:"Activities / Experiential Learning Resources",icon:"🧩",keys:["activity","activities","experiential","hands-on","project"]},
+{id:"assessment",label:"Question Banks / Assessment Resources",icon:"✅",keys:["question bank","assessment","question paper","quiz","test","item bank"]},
+{id:"digital",label:"Interactive / Digital Learning Resources",icon:"💻",keys:["interactive","digital","app","simulation","online tool","e-learning"]},
+{id:"other",label:"Any Other Relevant E-Content",icon:"🔖",keys:["other","reference","reading","book","article","resource"]}];
+let resources=[],activeCat="";
+const $=id=>document.getElementById(id), norm=x=>String(x||"").trim().toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ");
+function notice(msg,err=false){$("notice").textContent=msg;$("notice").className="notice show"+(err?" error":"")}
+function uniq(a){return [...new Set(a.map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}))}
+function category(r){let raw=norm([r.type,r.category,r.resourceType].join(" "));return (cats.find(c=>c.keys.some(k=>raw.includes(k)))||cats[7]).id}
+function normalize(r){return {className:String(r.className||r.class||r.grade||r.standard||"").trim(),subject:String(r.subject||r.subjectName||r.discipline||"").trim(),title:String(r.title||r.resourceTitle||r.name||r.resourceName||r.topic||"Untitled resource").trim(),type:String(r.type||r.category||r.resourceType||"Other").trim(),description:String(r.description||r.details||r.keywords||r.remark||"").trim(),url:String(r.url||r.link||r.resourceUrl||r.resourceLink||r.driveLink||r.hyperlink||"").trim()}}
+function fill(id,values,label){let s=$(id),old=s.value;s.innerHTML="";let o=document.createElement("option");o.value="";o.textContent=label;s.appendChild(o);values.forEach(v=>{let n=document.createElement("option");n.value=v;n.textContent=v;s.appendChild(n)});if(values.includes(old))s.value=old}
+function updateSubjects(){let c=$("classFilter").value;fill("subjectFilter",uniq(resources.filter(r=>!c||r.className===c).map(r=>r.subject)),"All subjects")}
+function filters(){fill("classFilter",uniq(resources.map(r=>r.className)),"All classes");updateSubjects()}
+function drawCats(){let h=$("categories");h.innerHTML="";cats.forEach(c=>{let b=document.createElement("button");b.className="cat"+(activeCat===c.id?" active":"");b.innerHTML='<span class="ico">'+c.icon+'</span><strong></strong><small>Click to filter</small>';b.querySelector("strong").textContent=c.label;b.onclick=()=>{activeCat=activeCat===c.id?"":c.id;drawCats();render()};h.appendChild(b)})}
+function filtered(){let cl=$("classFilter").value,su=$("subjectFilter").value,q=norm($("searchBox").value),sort=$("sortFilter").value;return resources.filter(r=>(!cl||r.className===cl)&&(!su||r.subject===su)&&(!activeCat||category(r)===activeCat)&&(!q||norm([r.title,r.description,r.type,r.subject,r.className].join(" ")).includes(q))).sort((a,b)=>String(a[sort]||"").localeCompare(String(b[sort]||""),undefined,{numeric:true,sensitivity:"base"}))}
+function render(){let host=$("results"),data=filtered();$("count").textContent=data.length+" resource"+(data.length===1?"":"s");host.className="";host.innerHTML="";if(!data.length){host.className="empty";host.textContent="No matching indexed resources. Try another filter or open the Drive folder / resource Sheet above.";return}let grid=document.createElement("div");grid.className="results";data.forEach(r=>{let card=document.createElement("article");card.className="resource";let h=document.createElement("h3");h.textContent=r.title;card.appendChild(h);let meta=document.createElement("div");meta.className="meta";[r.className&&"Class "+r.className,r.subject,r.type].filter(Boolean).forEach(t=>{let p=document.createElement("span");p.className="pill";p.textContent=t;meta.appendChild(p)});card.appendChild(meta);if(r.description){let d=document.createElement("div");d.className="desc";d.textContent=r.description;card.appendChild(d)}let a=document.createElement("a");a.className="btn open";a.target="_blank";a.rel="noopener";a.href=r.url||DRIVE_URL;a.textContent=r.url?"Open resource ↗":"Open E-Content Drive Folder ↗";card.appendChild(a);grid.appendChild(card)});host.appendChild(grid)}
+function fallback(){resources=[];filters();render();notice("The interface is uploaded, but the dynamic index needs the Apps Script Web App /exec URL. The Drive folder and Sheet buttons above are already active.",true);$("count").textContent="Resource index not connected"}
+function load(){if(DATA_ENDPOINT.includes("PASTE_YOUR")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url);filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
+$("classFilter").addEventListener("change",()=>{updateSubjects();render()});$("subjectFilter").addEventListener("change",render);$("searchBox").addEventListener("input",render);$("sortFilter").addEventListener("change",render);drawCats();load();
+</script>
+</body></html>
