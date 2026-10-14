@@ -111,7 +111,7 @@ function normalize(r){return {
  url:String(r.url||r.link||r.resourceUrl||r.resource_url||r.resourceLink||r.resource_link||r.driveLink||r.drive_link||r.hyperlink||r["URL"]||"").trim()
 }}
 function fill(id,values,label){let s=$(id),old=s.value;s.innerHTML="";let o=document.createElement("option");o.value="";o.textContent=label;s.appendChild(o);values.forEach(v=>{let n=document.createElement("option");n.value=v;n.textContent=v;s.appendChild(n)});if(values.includes(old))s.value=old}
-const CLASS_OPTIONS=["IV","V","VI","VII","VIII","IX","X","XI","XII"];
+const CLASS_OPTIONS=["III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
 const SUBJECTS_BY_CLASS={
  "IV":["English","Hindi","Mathematics","TWAU"],
  "V":["English","Hindi","Mathematics","TWAU"],
@@ -127,6 +127,7 @@ function updateSubjects(){
  const c=$("classFilter").value;
  const indexed=resources.filter(r=>!c||r.className===c).map(r=>r.subject);
  const preset=c?(SUBJECTS_BY_CLASS[c]||[]):[...Object.values(SUBJECTS_BY_CLASS).flat(),"TWAU"];
+ // Always include subjects actually present in the connected index, including classes not in the preset list.
  fill("subjectFilter",uniq([...preset,...indexed]),"All subjects");
 }
 function filters(){
