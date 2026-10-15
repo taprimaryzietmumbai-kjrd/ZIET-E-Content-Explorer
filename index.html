@@ -5,7 +5,7 @@
 <title>ZIET Mumbai | E-Content Explorer</title>
 <style>
 :root{--navy:#12316b;--blue:#1b4f91;--maroon:#9d1734;--gold:#eab84c;--ink:#26334a;--muted:#64718a;--line:#e1e7f0;--paper:#f4f7fc}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Arial,sans-serif;color:var(--ink);line-height:1.45}
+[hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Arial,sans-serif;color:var(--ink);line-height:1.45}
 header{background:linear-gradient(120deg,#10275c,#1b5797);color:white;text-align:center;padding:26px 16px 22px;border-bottom:5px solid var(--gold)}
 .brand{font-weight:800;letter-spacing:.03em}.hindi{font-weight:700;margin-top:5px}.english{font-size:.85rem;opacity:.94}h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:13px 0 4px;color:#fff1bf}.sub{margin:0 auto;max-width:780px}
 main{max-width:1200px;margin:22px auto;padding:0 14px 40px}.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
@@ -45,7 +45,7 @@ a.btn,button{display:inline-flex;align-items:center;justify-content:center;paddi
   </select></div>
  </div></section>
  <section class="panel"><h2>2. Choose Resource Type</h2><div class="categories" id="categories"></div></section>
- <section class="panel"><div class="resulthead"><h2 style="margin:0">3. Matching E-Content</h2><span class="count" id="count">Preparing resource index…</span></div><div class="result-view-filter"><label for="resultViewFilter">Organise matching results</label><select id="resultViewFilter"><option value="all">All matching results</option><option value="class">Classwise</option><option value="subject">Subjectwise</option><option value="type">Resource type wise</option></select></div><div id="notice" class="notice"></div><div id="results" class="empty">Resource index connection is being checked…</div></section>
+ <section class="panel"><div class="resulthead"><h2 style="margin:0">3. Matching E-Content</h2><span class="count" id="count">Preparing resource index…</span></div><div class="result-view-filter" id="resultViewFilterWrap" hidden><label for="resultViewFilter">Organise matching results</label><select id="resultViewFilter"><option value="all">All matching results</option><option value="class">Classwise</option><option value="subject">Subjectwise</option><option value="type">Resource type wise</option></select></div><div id="notice" class="notice"></div><div id="results" class="empty">Resource index connection is being checked…</div></section>
  <div class="foot">ZIET Mumbai • E-Content Repository • Use resources in accordance with their sharing permissions.</div>
 </main>
 <script>
@@ -138,6 +138,9 @@ function drawCats(){let h=$("categories");h.innerHTML="";cats.forEach(c=>{let b=
 function filtered(){let cl=$("classFilter").value,su=$("subjectFilter").value,selectedType=$("resourceTypeFilter").value;return resources.filter(r=>(!cl||r.className===cl)&&(!su||r.subject===su)&&(!selectedType||category(r)===selectedType)&&(!activeCat||category(r)===activeCat)).sort((a,b)=>String(a.title||"").localeCompare(String(b.title||""),undefined,{numeric:true,sensitivity:"base"}))}
 function render(){
  let host=$("results"),data=filtered();
+ const filterWrap=$("resultViewFilterWrap");
+ // Only reveal the grouping filter after real matching resource records exist.
+ filterWrap.hidden=!(Array.isArray(resources)&&resources.length>0&&data.length>0);
  $("count").textContent=data.length+" resource"+(data.length===1?"":"s");
  host.className="";host.innerHTML="";
  if(!data.length){
@@ -180,7 +183,6 @@ function render(){
    card.appendChild(a);grid.appendChild(card)
   });
   host.appendChild(grid);
- }
 }
 function fallback(){resources=[];filters();render();notice("The interface is uploaded, but the dynamic index needs the Apps Script Web App /exec URL. The Drive folder and Sheet buttons above are already active.",true);$("count").textContent="Resource index not connected"}
 function load(){if(DATA_ENDPOINT.includes("PASTE_YOUR")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url);filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
