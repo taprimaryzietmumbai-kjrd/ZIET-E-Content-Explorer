@@ -184,6 +184,7 @@ function render(){
   });
   host.appendChild(grid);
 }
+}
 function fallback(){resources=[];filters();render();notice("The interface is uploaded, but the dynamic index needs the Apps Script Web App /exec URL. The Drive folder and Sheet buttons above are already active.",true);$("count").textContent="Resource index not connected"}
 function load(){if(DATA_ENDPOINT.includes("PASTE_YOUR")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url);filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
 $("classFilter").addEventListener("change",()=>{updateSubjects();render()});$("subjectFilter").addEventListener("change",render);$("resourceTypeFilter").addEventListener("change",render);$("resultViewFilter").addEventListener("change",render);drawCats();load();
