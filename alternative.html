@@ -52,7 +52,7 @@ a.btn,button{display:inline-flex;align-items:center;justify-content:center;paddi
 const DRIVE_URL="https://drive.google.com/drive/folders/1ZsgALM_uAYuX4GQxoMHyHnbHDP78EQX2?usp=sharing";
 const SHEET_URL="https://docs.google.com/spreadsheets/d/1yeb0FySpG_nFRxuwtoXSayE1ntc0A-9T_g8kefxvkQw/edit?usp=sharing";
 // After deploying Code.gs as a Google Apps Script Web App, paste its /exec URL below.
-const DATA_ENDPOINT="PASTE_ALL_TABS_WEB_APP_URL_HERE";
+const DATA_ENDPOINT="https://script.google.com/macros/s/AKfycbz9XY0wxuavCpbUbURGrSB0vWKurkwh1Q1BdK7NjkfPBrYPRvFvGE3cKwCbuKvpnLhUUw/exec";
 const cats=[
 {id:"video",label:"Videos / Audio-Visual Resources",icon:"🎬",keys:["video","audio visual","audio-visual","multimedia"]},
 {id:"ppt",label:"PPTs / Presentations",icon:"📊",keys:["ppt","powerpoint","presentation","slides"]},
@@ -190,26 +190,42 @@ function load(){
  if(DATA_ENDPOINT.includes("PASTE_")||!DATA_ENDPOINT.startsWith("https://script.google.com/macros/s/")){
   fallback();return;
  }
- const cb="ecb_"+Math.random().toString(36).slice(2);
- const s=document.createElement("script");
- window[cb]=data=>{
-  delete window[cb];s.remove();
-  const ok=data&&(data.status==="success"||data.success===true)&&Array.isArray(data.resources);
-  if(!ok){
-   fallback();
-   notice("The index endpoint responded, but its data format was not recognised. Check the Apps Script Web App URL and response.",true);
-   return;
-  }
-  resources=data.resources.map(normalize).filter(r=>r.url);
-  filters();render();
-  notice("Connected to the resource index: "+resources.length+" linked resources.");
-  $("notice").className="notice show";
- };
- s.onerror=()=>{
-  delete window[cb];s.remove();fallback();
- };
- s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=list&limit=1000";
- document.body.appendChild(s);
+ resources=[];
+ const pageSize=1000;
+ let offset=0;
+ function loadPage(){
+  const cb="ecb_"+Math.random().toString(36).slice(2);
+  const s=document.createElement("script");
+  let finished=false;
+  function cleanup(){if(finished)return;finished=true;delete window[cb];s.remove();}
+  window[cb]=data=>{
+   cleanup();
+   const ok=data&&(data.status==="success"||data.success===true)&&Array.isArray(data.resources);
+   if(!ok){
+    if(resources.length){filters();render();notice("Loaded "+resources.length+" resources, but a later page could not be read. Please check the Apps Script response.",true);}
+    else {fallback();notice("The index endpoint responded, but its data format was not recognised. Check the Apps Script Web App URL and response.",true);}
+    return;
+   }
+   resources.push(...data.resources.map(normalize).filter(r=>r.url));
+   const more=data.hasMore===true;
+   if(more){
+    offset+=pageSize;
+    loadPage();
+   }else{
+    filters();render();
+    notice("Connected to the resource index: "+resources.length+" linked resources.");
+    $("notice").className="notice show";
+   }
+  };
+  s.onerror=()=>{
+   cleanup();
+   if(resources.length){filters();render();notice("Loaded "+resources.length+" resources; the next page failed to load.",true);}
+   else {fallback();notice("Could not load the Apps Script resource index. Check deployment access and the Web App URL.",true);}
+  };
+  s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=list&limit="+pageSize+"&offset="+offset;
+  document.body.appendChild(s);
+ }
+ loadPage();
 }
 $("classFilter").addEventListener("change",()=>{updateSubjects();render()});$("subjectFilter").addEventListener("change",render);$("resourceTypeFilter").addEventListener("change",()=>{activeCat=$("resourceTypeFilter").value;drawCats();render()});$("resultViewFilter").addEventListener("change",render);drawCats();load();
 </script>
