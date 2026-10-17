@@ -50,7 +50,7 @@ a.btn,button{display:inline-flex;align-items:center;justify-content:center;paddi
 </main>
 <script>
 const DRIVE_URL="https://drive.google.com/drive/folders/1ZsgALM_uAYuX4GQxoMHyHnbHDP78EQX2?usp=sharing";
-const SHEET_URL="https://docs.google.com/spreadsheets/d/1AC71sfjr9uOfowsy0Kf_D0J4RQAKwyF8-BkiiJApu7I/edit?usp=sharing";
+const SHEET_URL="https://docs.google.com/spreadsheets/d/1yeb0FySpG_nFRxuwtoXSayE1ntc0A-9T_g8kefxvkQw/edit?usp=sharing";
 // After deploying Code.gs as a Google Apps Script Web App, paste its /exec URL below.
 const DATA_ENDPOINT="PASTE_ALL_TABS_WEB_APP_URL_HERE";
 const cats=[
@@ -103,11 +103,11 @@ function normalizeSubject(value){
 function normalize(r){return {
  className:String(r.className||r.class_name||r.class||r.grade||r.standard||r["Class"]||"").trim(),
  subject:normalizeSubject(r.subject||r.subjectName||r.subject_name||r.discipline||r["Subject"]||""),
- title:String(r.title||r.resourceTitle||r.resource_title||r.name||r.resourceName||r.resource_name||r.topic||r["Title"]||"Untitled resource").trim(),
- type:String(r.type||r.category||r.resourceType||r.resource_type||r["Resource Type"]||r.sourceColumn||r.source_column||r["Source Column"]||"Other").trim(),
- sourceColumn:String(r.sourceColumn||r.source_column||r["Source Column"]||"").trim(),
- description:String(r.description||r.details||r.keywords||r.remark||r["Description"]||"").trim(),
- url:String(r.url||r.link||r.resourceUrl||r.resource_url||r.resourceLink||r.resource_link||r.driveLink||r.drive_link||r.hyperlink||r["URL"]||"").trim()
+ title:String(r.title||r.resourceTitle||r.resource_title||r.name||r.resourceName||r.resource_name||r.topic||r["Resource Title"]||r["Title"]||r["Actual Drive Name"]||"Untitled resource").trim(),
+ type:String(r.type||r.category||r.resourceType||r.resource_type||r["Resource Type"]||r["Suggested Type"]||r.sourceColumn||r.source_column||r["Source Column"]||"Other").trim(),
+ sourceColumn:String(r.sourceColumn||r.source_column||r["Source Column"]||r["Source Tab"]||"").trim(),
+ description:String(r.description||r.details||r.keywords||r.remark||r["Description"]||r["Extraction Status"]||"").trim(),
+ url:String(r.url||r.link||r.resourceUrl||r.resource_url||r.resourceLink||r.resource_link||r.driveLink||r.drive_link||r.hyperlink||r["Resource URL"]||r["URL"]||"").trim()
 }}
 function fill(id,values,label){let s=$(id),old=s.value;s.innerHTML="";let o=document.createElement("option");o.value="";o.textContent=label;s.appendChild(o);values.forEach(v=>{let n=document.createElement("option");n.value=v;n.textContent=v;s.appendChild(n)});if(values.includes(old))s.value=old}
 const CLASS_OPTIONS=["III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
@@ -186,7 +186,31 @@ function render(){
 }
 }
 function fallback(){resources=[];filters();render();notice("The interface is uploaded, but the dynamic index needs the Apps Script Web App /exec URL. The Drive folder and Sheet buttons above are already active.",true);$("count").textContent="Resource index not connected"}
-function load(){if(DATA_ENDPOINT.includes("PASTE_")||!DATA_ENDPOINT.startsWith("https://script.google.com/macros/s/")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url);filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
+function load(){
+ if(DATA_ENDPOINT.includes("PASTE_")||!DATA_ENDPOINT.startsWith("https://script.google.com/macros/s/")){
+  fallback();return;
+ }
+ const cb="ecb_"+Math.random().toString(36).slice(2);
+ const s=document.createElement("script");
+ window[cb]=data=>{
+  delete window[cb];s.remove();
+  const ok=data&&(data.status==="success"||data.success===true)&&Array.isArray(data.resources);
+  if(!ok){
+   fallback();
+   notice("The index endpoint responded, but its data format was not recognised. Check the Apps Script Web App URL and response.",true);
+   return;
+  }
+  resources=data.resources.map(normalize).filter(r=>r.url);
+  filters();render();
+  notice("Connected to the resource index: "+resources.length+" linked resources.");
+  $("notice").className="notice show";
+ };
+ s.onerror=()=>{
+  delete window[cb];s.remove();fallback();
+ };
+ s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=list&limit=1000";
+ document.body.appendChild(s);
+}
 $("classFilter").addEventListener("change",()=>{updateSubjects();render()});$("subjectFilter").addEventListener("change",render);$("resourceTypeFilter").addEventListener("change",()=>{activeCat=$("resourceTypeFilter").value;drawCats();render()});$("resultViewFilter").addEventListener("change",render);drawCats();load();
 </script>
 </body></html>
