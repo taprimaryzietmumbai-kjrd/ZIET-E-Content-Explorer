@@ -110,7 +110,7 @@ function normalizeSubject(value){
  return aliases[key]||raw;
 }
 function normalizeClass(value){
- const raw=String(value||"").trim().replace(/^class\\s*/i,"").toUpperCase();
+ const raw=String(value||"").trim().replace(/^class\s*/i,"").toUpperCase();
  const aliases={"4":"IV","04":"IV","6":"VI","06":"VI","10":"X","11":"XI","12":"XII","III":"III","IV":"IV","V":"V","VI":"VI","VII":"VII","VIII":"VIII","IX":"IX","X":"X","XI":"XI","XII":"XII"};
  return aliases[raw]||raw;
 }
