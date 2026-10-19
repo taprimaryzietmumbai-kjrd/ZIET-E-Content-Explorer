@@ -63,6 +63,15 @@ const cats=[
 {id:"digital",label:"Interactive / Digital Learning Resources",icon:"💻",keys:["interactive","digital","app","simulation","online tool","e-learning"]},
 {id:"other",label:"Any Other Relevant E-Content",icon:"🔖",keys:["other","reference","reading","book","article","resource"]}];
 let resources=[],activeCat="";
+const supplementalResources=[
+ {className:"IV",subject:"English, Hindi, TWAU, Mathematics, Art and Craft",title:"MDP: Water",type:"MDP / Project-Based Learning",description:"Ahmedabad Region sheet; Class IV.",url:"https://drive.google.com/drive/folders/1DDn1VKQxlM7THWGnC1gynfIMnkRI4d9S"},
+ {className:"IV",subject:"English",title:"E-Content Developed by Teachers",type:"Teacher-Developed E-Content",description:"Ahmedabad Region sheet; Class IV.",url:"https://drive.google.com/drive/folders/1YQUk476qc6tyT4JJk0ibozs0RwP_zBeX"},
+ {className:"IV",subject:"Mathematics, TWAU, English, Art and Craft",title:"Best Practices: Exploring Our Neighbourhood, 2D Shapes, Animal Sounds and Young Ones, Classification of Leaves",type:"Best Practices / Activities",description:"The source sheet lists Class IV alongside some Class II activities; open the collection and select the relevant Class IV item.",url:"https://drive.google.com/file/d/13ITsPujj6iUaWbXWrdo0tTcuobRB3ZJk/view?usp=sharing"},
+ {className:"VI",subject:"Sanskrit, English",title:"MDP: Our Environment",type:"MDP / Project-Based Learning",description:"Ahmedabad Region sheet; Class VI.",url:"https://drive.google.com/drive/folders/11aXXYRFZQOj5ce6bby7PjwKKzIYOUP2S?usp=drive_link"},
+ {className:"VI",subject:"Science",title:"Green Hydrogen and Ethanol",type:"E-Content",description:"Ahmedabad Region sheet; Class VI.",url:"https://drive.google.com/drive/folders/16OyxaGzFhTAM9jxfUgxJjUGi4E09zDSA?usp=drive_link"},
+ {className:"VI",subject:"Sanskrit",title:"क्रीडामः वयं श्लोकान्त्यक्षरीम्; डीजीभारतम् : युग परिवर्तनम्",type:"E-Content / Presentation",description:"The source sheet labels this resource for Classes 6 and 7.",url:"https://docs.google.com/presentation/d/1K12URDtMLa9gLleAZavXl055y393426Y/edit?usp=drivesdk"},
+ {className:"X",subject:"Sanskrit",title:"क्रीडामः वयं श्लोकान्त्यक्षरीम्; डीजीभारतम् : युग परिवर्तनम्",type:"E-Content / Presentation",description:"Sanskrit resource explicitly labelled Class X in the source sheet.",url:"https://docs.google.com/presentation/d/1K12URDtMLa9gLleAZavXl055y393426Y/edit?usp=drivesdk"}
+];
 const $=id=>document.getElementById(id), norm=x=>String(x||"").trim().toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ");
 function notice(msg,err=false){$("notice").textContent=msg;$("notice").className="notice show"+(err?" error":"")}
 function uniq(a){return [...new Set(a.map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}))}
@@ -100,8 +109,13 @@ function normalizeSubject(value){
  };
  return aliases[key]||raw;
 }
+function normalizeClass(value){
+ const raw=String(value||"").trim().replace(/^class\\s*/i,"").toUpperCase();
+ const aliases={"4":"IV","04":"IV","6":"VI","06":"VI","10":"X","11":"XI","12":"XII","III":"III","IV":"IV","V":"V","VI":"VI","VII":"VII","VIII":"VIII","IX":"IX","X":"X","XI":"XI","XII":"XII"};
+ return aliases[raw]||raw;
+}
 function normalize(r){return {
- className:String(r.className||r.class_name||r.class||r.grade||r.standard||r["Class"]||"").trim(),
+ className:normalizeClass(r.className||r.class_name||r.class||r.grade||r.standard||r["Class"]||""),
  subject:normalizeSubject(r.subject||r.subjectName||r.subject_name||r.discipline||r["Subject"]||""),
  title:String(r.title||r.resourceTitle||r.resource_title||r.name||r.resourceName||r.resource_name||r.topic||r["Title"]||"Untitled resource").trim(),
  type:String(r.type||r.category||r.resourceType||r.resource_type||r["Resource Type"]||r.sourceColumn||r.source_column||r["Source Column"]||"Other").trim(),
@@ -185,8 +199,8 @@ function render(){
   host.appendChild(grid);
 }
 }
-function fallback(){resources=[];filters();render();notice("The interface is uploaded, but the dynamic index needs the Apps Script Web App /exec URL. The Drive folder and Sheet buttons above are already active.",true);$("count").textContent="Resource index not connected"}
-function load(){if(DATA_ENDPOINT.includes("PASTE_YOUR")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url);filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
+function fallback(){resources=supplementalResources.map(normalize);filters();render();notice("Showing the verified resources from the uploaded Ahmedabad sheet. The live resource index could not be connected.",true);$("count").textContent=resources.length+" supplemental resources"}
+function load(){if(DATA_ENDPOINT.includes("PASTE_YOUR")){fallback();return}let cb="ecb_"+Math.random().toString(36).slice(2),s=document.createElement("script");window[cb]=data=>{delete window[cb];s.remove();if(!data||data.status!=="success"||!Array.isArray(data.resources)){fallback();notice("Could not read resource rows. Check the Apps Script URL, sharing settings and sheet headers.",true);return}resources=[...data.resources.map(normalize).filter(r=>r.title!=="Untitled resource"||r.url),...supplementalResources.map(normalize)];filters();render();$("notice").className="notice"};s.onerror=()=>{delete window[cb];s.remove();fallback()};s.src=DATA_ENDPOINT+(DATA_ENDPOINT.includes("?")?"&":"?")+"callback="+cb+"&action=resources";document.body.appendChild(s)}
 $("classFilter").addEventListener("change",()=>{updateSubjects();render()});$("subjectFilter").addEventListener("change",render);$("resourceTypeFilter").addEventListener("change",render);$("resultViewFilter").addEventListener("change",render);drawCats();load();
 </script>
 </body></html>
